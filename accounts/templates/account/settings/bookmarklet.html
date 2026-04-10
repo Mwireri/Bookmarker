@@ -1,0 +1,121 @@
+{% extends 'account/settings/base.html' %}
+{% load static %}
+
+{% block title %}Bookmarklet | Settings | ImageMark{% endblock %}
+
+{% block settings_content %}
+<div class="space-y-8">
+    <!-- Installation Section -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <span class="material-icons-outlined text-teal-600">download</span>
+                Install the Bookmarklet
+            </h3>
+        </div>
+        <div class="p-6 space-y-6">
+            <!-- Step-by-step Instructions -->
+            <div class="space-y-4">
+                <h4 class="font-medium text-gray-900">Installation Steps:</h4>
+                <ol class="space-y-3">
+                    <li class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                        <div>
+                            <p class="text-gray-700">Make sure your bookmarks bar is visible</p>
+                            <p class="text-sm text-gray-500">Press <kbd class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">Ctrl+Shift+B</kbd> (Windows/Linux) or <kbd class="px-1.5 py-0.5 bg-gray-100 rounded text-xs">⌘+Shift+B</kbd> (Mac)</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                        <p class="text-gray-700">Drag the green "Bookmark to ImageMark" button to your bookmarks bar</p>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="flex-shrink-0 w-6 h-6 bg-teal-100 text-teal-700 rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                        <p class="text-gray-700">Visit any webpage with images and click the bookmarklet to start saving!</p>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <span class="material-icons-outlined text-purple-600">help_outline</span>
+                How It Works
+            </h3>
+        </div>
+        <div class="p-6">
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center p-4">
+                    <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="material-icons-outlined text-blue-600 text-3xl">touch_app</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 mb-2">1. Click the Bookmarklet</h4>
+                    <p class="text-sm text-gray-600">On any webpage, click the "Bookmark to ImageMark" button in your bookmarks bar</p>
+                </div>
+                <div class="text-center p-4">
+                    <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="material-icons-outlined text-purple-600 text-3xl">photo_library</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 mb-2">2. Browse Images</h4>
+                    <p class="text-sm text-gray-600">A gallery will appear showing all images found on the page. Filter by size or search!</p>
+                </div>
+                <div class="text-center p-4">
+                    <div class="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <span class="material-icons-outlined text-teal-600 text-3xl">bookmark_added</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-900 mb-2">3. Save to Collection</h4>
+                    <p class="text-sm text-gray-600">Click any image to open it in ImageMark and add it to your bookmarks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Troubleshooting -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <span class="material-icons-outlined text-red-600">build</span>
+                Troubleshooting
+            </h3>
+        </div>
+        <div class="p-6 space-y-4">
+            <details class="group">
+                <summary class="flex items-center justify-between cursor-pointer p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                    <span class="font-medium text-gray-900">The bookmarklet doesn't work on some sites</span>
+                    <span class="material-icons-outlined text-gray-400 group-open:rotate-180 transition-transform">expand_more</span>
+                </summary>
+                <div class="p-3 text-sm text-gray-600">
+                    Some websites have strict security policies (CSP) that block external scripts. 
+                    Unfortunately, the bookmarklet won't work on these sites. Try right-clicking on images 
+                    and copying the image URL directly.
+                </div>
+            </details>
+            <details class="group">
+                <summary class="flex items-center justify-between cursor-pointer p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                    <span class="font-medium text-gray-900">I can't drag the button to my bookmarks bar</span>
+                    <span class="material-icons-outlined text-gray-400 group-open:rotate-180 transition-transform">expand_more</span>
+                </summary>
+                <div class="p-3 text-sm text-gray-600">
+                    Try right-clicking on the button and selecting "Add to Bookmarks" or "Bookmark This Link". 
+                    You can also manually create a bookmark and paste the bookmarklet code.
+                </div>
+            </details>
+            <details class="group">
+                <summary class="flex items-center justify-between cursor-pointer p-3 bg-gray-50 rounded-lg hover:bg-gray-100">
+                    <span class="font-medium text-gray-900">No images are found on the page</span>
+                    <span class="material-icons-outlined text-gray-400 group-open:rotate-180 transition-transform">expand_more</span>
+                </summary>
+                <div class="p-3 text-sm text-gray-600">
+                    The bookmarklet looks for images with common formats (JPG, PNG, GIF, WebP) that are at least 
+                    100x100 pixels. Very small images, icons, and SVGs are filtered out to show only 
+                    bookmarkable content.
+                </div>
+            </details>
+        </div>
+    </div>
+</div>
+{% endblock %}

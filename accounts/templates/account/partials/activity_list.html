@@ -1,0 +1,50 @@
+{% for activity in activities %}
+<div class="activity-item flex items-start gap-3 p-4 border-b border-gray-100 hover:bg-gray-50 transition {% if not activity.is_read %}bg-teal-50{% endif %}">
+  <!-- Actor avatar -->
+  <a href="{% url 'user_profile' activity.actor.username %}" class="flex-shrink-0">
+    {% if activity.actor.profile_picture %}
+    <img src="{{ activity.actor.profile_picture.url }}" alt="{{ activity.actor.username }}" class="h-10 w-10 rounded-full object-cover" />
+    {% else %}
+    <div class="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+      <span class="text-teal-600 font-medium">{{ activity.actor.username|slice:":1"|upper }}</span>
+    </div>
+    {% endif %}
+  </a>
+
+  <!-- Activity content -->
+  <div class="flex-1 min-w-0">
+    <p class="text-sm">
+      <a href="{% url 'user_profile' activity.actor.username %}" class="font-semibold text-gray-900 hover:underline">
+        {{ activity.actor.get_full_name|default:activity.actor.username }}
+      </a>
+      <span class="text-gray-600">{{ activity.get_verb_display }}</span>
+      {% if activity.verb == 'like' and activity.target %}
+      <a href="{{ activity.target.get_absolute_url }}" class="font-medium text-teal-600 hover:underline">{{ activity.target.title }}</a>
+      {% endif %}
+    </p>
+    <p class="text-xs text-gray-500 mt-1">
+      {{ activity.created_at|timesince }} ago
+    </p>
+  </div>
+
+  <!-- Action icon based on verb -->
+  <div class="flex-shrink-0">
+    {% if activity.verb == 'follow' %}
+    <span class="material-icons-outlined text-teal-600">person_add</span>
+    {% elif activity.verb == 'like' %}
+    <span class="material-icons text-red-500">favorite</span>
+    {% elif activity.verb == 'comment' %}
+    <span class="material-icons-outlined text-blue-500">comment</span>
+    {% elif activity.verb == 'bookmark' %}
+    <span class="material-icons-outlined text-yellow-500">bookmark</span>
+    {% endif %}
+  </div>
+
+  <!-- Mark as read button for unread items -->
+  {% if not activity.is_read %}
+  <button onclick="markAsRead({{ activity.id }}, this)" class="flex-shrink-0 text-gray-400 hover:text-teal-600" title="Mark as read">
+    <span class="material-icons-outlined text-sm">check_circle</span>
+  </button>
+  {% endif %}
+</div>
+{% endfor %}

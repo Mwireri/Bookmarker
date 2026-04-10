@@ -1,0 +1,476 @@
+{% extends 'base.html' %}
+{% load static thumbnail %}
+
+{% block content %}
+<div class="border-b border-gray-200">
+    <div class="px-4 pb-4 pt-4">
+        <!-- Profile header -->
+        <div class="flex justify-between items-start mb-4">
+            <div class="profile-picture-container">
+                <img id="profile-picture"
+                    src="{% if user.profile_picture %}{% thumbnail user.profile_picture 128x128 crop quality=90 %}{% else %}{% static 'images/default-profile.png' %}{% endif %}"
+                    alt="{{ user.username }}" class="w-32 h-32 rounded-full border-4 border-white object-cover">
+
+                <div class="profile-picture-overlay" onclick="document.getElementById('profile-picture-input').click()">
+                    <span id="camera-icon" class="material-icons text-white text-2xl">photo_camera</span>
+                </div>
+
+                <input type="file" id="profile-picture-input" accept="image/*" class="hidden"
+                    onchange="updateProfilePicture(this)">
+            </div>
+            
+            <!-- Mobile profile Actions Menu -->
+            <div class="relative lg:hidden">
+                <button type="button" onclick="toggleProfileMenu()" 
+                    class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+                    <span class="material-icons-outlined">more_vert</span>
+                </button>
+                
+                <!-- dropdown menu -->
+                <div id="profile-menu" class="hidden fixed top-auto mt-1 w-44 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50" style="right: 1rem;">
+                    <a href="{% url 'settings' %}" 
+                        class="flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-gray-50 transition-colors">
+                        <span class="material-icons-outlined text-sm">settings</span>
+                        Settings
+                    </a>
+                    <div class="border-t border-gray-100 my-1"></div>
+                    <button type="button" onclick="openLogoutModal(); toggleProfileMenu();"
+                        class="flex items-center gap-3 px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors w-full">
+                        <span class="material-icons-outlined text-sm">logout</span>
+                        Log out
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="space-y-3">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">
+                    {{ user.get_full_name|default:user.username }}
+                </h1>
+                <p class="text-gray-500">@{{ user.username }}</p>
+            </div>
+
+            {% if user.about %}
+            <p class="text-gray-800">{{ user.about }}</p>
+            {% endif %}
+
+            <div class="flex flex-wrap items-center gap-4 text-gray-500 text-sm">
+                {% if user.country %}
+                <span class="flex items-center gap-1">
+                    <span class="material-icons-outlined text-sm">location_on</span>
+                    {{ user.country }}
+                </span>
+                {% endif %}
+                <span class="flex items-center gap-1">
+                    <span class="material-icons-outlined text-sm">calendar_today</span>
+                    Joined {{ user.date_joined|date:"M Y" }}
+                </span>
+            </div>
+
+            <div class="flex gap-6">
+                <a href="{% url 'following_list' %}" class="hover:underline">
+                    <span class="font-bold text-gray-900">{{ following_count|default:0 }}</span>
+                    <span class="text-gray-500 ml-1">Following</span>
+                </a>
+                <a href="{% url 'followers_list' %}" class="hover:underline">
+                    <span class="font-bold text-gray-900">{{ follower_count|default:0 }}</span>
+                    <span class="text-gray-500 ml-1">Follower{{ follower_count|pluralize }}</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="border-b border-gray-200">
+    <nav class="flex justify-between">
+        <button onclick="showTab('bookmarks')"
+            class="tab-button flex-1 px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-gray-300 transition-colors text-center"
+            id="bookmarks-tab">
+            <span class="flex items-center gap-2 justify-center">
+                <span class="material-icons-outlined text-sm">bookmark</span>
+                Bookmarks{% if bookmarks_count %} <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{{ bookmarks_count }}</span>{% endif %}
+            </span>
+        </button>
+        <button onclick="showTab('likes')"
+            class="tab-button flex-1 px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-gray-300 transition-colors text-center"
+            id="likes-tab">
+            <span class="flex items-center gap-2 justify-center">
+                <span class="material-icons-outlined text-sm">favorite</span>
+                Likes{% if likes_count %} <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full">{{ likes_count }}</span>{% endif %}
+            </span>
+        </button>
+        <button onclick="showTab('replies')"
+            class="tab-button flex-1 px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-gray-300 transition-colors text-center"
+            id="replies-tab">
+            <span class="flex items-center gap-2 justify-center">
+                <span class="material-icons-outlined text-sm">reply</span>
+                Replies
+            </span>
+        </button>
+    </nav>
+</div>
+
+<div class="min-h-screen">
+    <!-- Bookmarks Tab -->
+    <div id="bookmarks-content" class="tab-content">
+        <div id="bookmarks-container"></div>
+        <div id="bookmarks-loading" class="p-8 text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+            <p class="mt-2 text-gray-500">Loading bookmarks...</p>
+        </div>
+        <div id="bookmarks-load-more" class="h-20 hidden"></div>
+    </div>
+
+    <!-- Likes Tab Content -->
+    <div id="likes-content" class="tab-content hidden">
+        <div id="likes-container"></div>
+        <div id="likes-loading" class="p-8 text-center hidden">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+            <p class="mt-2 text-gray-500">Loading likes...</p>
+        </div>
+        <div id="likes-load-more" class="h-20 hidden"></div>
+    </div>
+
+    <!-- Replies Tab Content -->
+    <div id="replies-content" class="tab-content hidden">
+        <div class="p-4">
+            <div class="text-center py-12">
+                <span class="material-icons-outlined text-6xl text-gray-300 mb-4">chat_bubble_outline</span>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">No replies yet</h3>
+                <p class="text-gray-500">Your replies and comments will appear here</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    //state management for lazy loading
+    const tabState = {
+        bookmarks: { loaded: false, loading: false, hasMore: true, nextPage: 1, observer: null },
+        likes: { loaded: false, loading: false, hasMore: true, nextPage: 1, observer: null }
+    };
+
+    const PROFILE_API_URLS = {
+        bookmarks: '{% url "profile_bookmarks_api" %}',
+        likes: '{% url "profile_likes_api" %}'
+    };
+
+    // profile menu toggle
+    function toggleProfileMenu() {
+        const menu = document.getElementById('profile-menu');
+        const button = document.querySelector('[onclick*="toggleProfileMenu"]');
+        
+        if (menu.classList.contains('hidden')) {
+            // Position menu below button
+            const buttonRect = button.getBoundingClientRect();
+            menu.style.top = (buttonRect.bottom + 4) + 'px';
+            menu.classList.remove('hidden');
+        } else {
+            menu.classList.add('hidden');
+        }
+    }
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const menu = document.getElementById('profile-menu');
+        const menuButton = e.target.closest('[onclick*="toggleProfileMenu"]');
+        if (menu && !menuButton && !e.target.closest('#profile-menu')) {
+            menu.classList.add('hidden');
+        }
+    });
+
+    async function loadTabContent(tabName, page = 1) {
+        const state = tabState[tabName];
+        if (!state || state.loading) return;
+
+        state.loading = true;
+        const container = document.getElementById(`${tabName}-container`);
+        const loadingEl = document.getElementById(`${tabName}-loading`);
+        const loadMoreEl = document.getElementById(`${tabName}-load-more`);
+
+        // Show loading indicator
+        loadingEl.classList.remove('hidden');
+
+        try {
+            const url = new URL(PROFILE_API_URLS[tabName], window.location.origin);
+            url.searchParams.set('page', page);
+
+            const response = await fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (!response.ok) throw new Error('Network error');
+
+            const data = await response.json();
+
+            if (data.html && data.html.trim()) {
+                if (page === 1) {
+                    container.innerHTML = data.html;
+                } else {
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.html;
+                    const newGrid = tempDiv.querySelector('.grid');
+                    const existingGrid = container.querySelector('.grid');
+                    
+                    if (newGrid && existingGrid) {
+                        // append all children of the new grid to existing grid
+                        while (newGrid.firstChild) {
+                            existingGrid.appendChild(newGrid.firstChild);
+                        }
+                    } else {
+                        // Fallback
+                        container.insertAdjacentHTML('beforeend', data.html);
+                    }
+                }
+                
+                // Reinitialize like buttons
+                if (typeof initializeLikeButtons === 'function') {
+                    initializeLikeButtons();
+                }
+            } else if (page === 1) {
+                // show empty state
+                container.innerHTML = getEmptyState(tabName);
+            }
+
+            state.loaded = true;
+            state.hasMore = data.has_next;
+            state.nextPage = data.next_page;
+
+            // Set infinite scroll observer
+            if (state.hasMore && !state.observer) {
+                loadMoreEl.classList.remove('hidden');
+                state.observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && state.hasMore && !state.loading) {
+                            loadTabContent(tabName, state.nextPage);
+                        }
+                    });
+                }, { rootMargin: '100px' });
+                state.observer.observe(loadMoreEl);
+            } else if (!state.hasMore && state.observer) {
+                state.observer.disconnect();
+                loadMoreEl.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error(`Error loading ${tabName}:`, error);
+            if (page === 1) {
+                container.innerHTML = '<div class="p-8 text-center text-red-500">Failed to load content. Please try again.</div>';
+            }
+        } finally {
+            state.loading = false;
+            loadingEl.classList.add('hidden');
+        }
+    }
+
+    function getEmptyState(tabName) {
+        const states = {
+            bookmarks: `
+                <div class="p-4 text-center py-12">
+                    <span class="material-icons-outlined text-6xl text-gray-300 mb-4">bookmark_border</span>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No bookmarks yet</h3>
+                    <p class="text-gray-500 mb-4">Start bookmarking images you love!</p>
+                    <a href="{% url 'explore' %}" class="inline-flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
+                        <span class="material-icons-outlined text-sm">explore</span>
+                        Explore Images
+                    </a>
+                </div>
+            `,
+            likes: `
+                <div class="p-4 text-center py-12">
+                    <span class="material-icons-outlined text-6xl text-gray-300 mb-4">favorite_border</span>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No likes yet</h3>
+                    <p class="text-gray-500 mb-4">Images you like will appear here</p>
+                    <a href="{% url 'explore' %}" class="inline-flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
+                        <span class="material-icons-outlined text-sm">explore</span>
+                        Explore Images
+                    </a>
+                </div>
+            `
+        };
+        return states[tabName] || '';
+    }
+
+    function showTab(tabName) {
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => content.classList.add('hidden'));
+
+        const tabButtons = document.querySelectorAll('.tab-button');
+        tabButtons.forEach(button => {
+            button.classList.remove('text-teal-600', 'border-teal-600');
+            button.classList.add('text-gray-500', 'border-transparent');
+        });
+
+        document.getElementById(tabName + '-content').classList.remove('hidden');
+
+        const activeTab = document.getElementById(tabName + '-tab');
+        activeTab.classList.remove('text-gray-500', 'border-transparent');
+        activeTab.classList.add('text-teal-600', 'border-teal-600');
+
+        // Lazy load tab content if not already loaded
+        if (tabState[tabName] && !tabState[tabName].loaded) {
+            loadTabContent(tabName, 1);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        showTab('bookmarks');
+    });
+
+    function showMessage(message, type) {
+        // Create message container if it doesn't exist
+        let messagesContainer = document.querySelector('.messages');
+        if (!messagesContainer) {
+            messagesContainer = document.createElement('div');
+            messagesContainer.className = 'messages';
+            const mainContent = document.querySelector('main');
+            mainContent.insertBefore(messagesContainer, mainContent.firstChild);
+        }
+
+        // Create message element
+        const messageEl = document.createElement('div');
+        messageEl.className = `px-4 py-3 ${type} ${type === 'error' ? 'bg-red-100 text-red-700' :
+                type === 'success' ? 'bg-green-100 text-green-700' :
+                    'bg-blue-100 text-blue-700'
+            }`;
+        messageEl.textContent = message;
+
+        // Clear existing messages
+        messagesContainer.innerHTML = '';
+
+        // Add new message
+        messagesContainer.appendChild(messageEl);
+
+        // Optional: Auto-hide message after 5 seconds
+        setTimeout(() => {
+            messageEl.style.transition = 'opacity 0.5s ease-out';
+            messageEl.style.opacity = '0';
+            setTimeout(() => messageEl.remove(), 500);
+            if (messagesContainer.children.length === 0) {
+                messagesContainer.remove();
+            }
+        }, 5000);
+    }
+
+    function updateProfilePicture(input) {
+        const file = input.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Please select a valid image file.');
+            input.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size must be less than 5MB.');
+            input.value = '';
+            return;
+        }
+
+        const profileImg = document.getElementById('profile-picture');
+        const cameraIcon = document.getElementById('camera-icon');
+        const originalSrc = profileImg.src;
+
+        cameraIcon.textContent = 'hourglass_empty';
+        cameraIcon.style.animation = 'spin 1s linear infinite';
+
+        const formData = new FormData();
+        formData.append('profile_picture', file);
+
+        window.isUpdatingProfilePicture = true;
+
+        fetch('{% url "update_profile_picture" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // cache-busting parameter to force browser to load new image
+                    profileImg.src = data.image_url + '?t=' + new Date().getTime();
+                    showMessage(data.message, 'success');
+                } else {
+                    profileImg.src = originalSrc;
+                    showMessage(data.message, 'error');
+                }
+                input.value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                profileImg.src = originalSrc;
+                showMessage('Upload failed. Please try again.', 'error');
+                input.value = '';
+            })
+            .finally(() => {
+                cameraIcon.textContent = 'photo_camera';
+                cameraIcon.style.animation = '';
+            });
+    }
+</script>
+
+<style>
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .profile-picture-container {
+        width: 128px;
+        height: 128px;
+        position: relative;
+    }
+
+    .profile-picture-overlay {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        cursor: pointer;
+    }
+
+    .profile-picture-container:hover .profile-picture-overlay {
+        opacity: 1;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.LIKE_URL = "{% url 'images:like' %}";
+</script>
+<script src="{% static 'js/like.js' %}"></script>
+{% endblock %}

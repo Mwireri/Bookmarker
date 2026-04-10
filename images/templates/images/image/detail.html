@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load static thumbnail %}
+
+{% block title %}{{ image.title }} | ImageMark{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-4xl py-8 px-4">
+  <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+    <!-- Image -->
+    <div class="bg-gray-50 p-4">
+      <img 
+        src="{% thumbnail image.image 800x600 quality=90 %}" 
+        alt="{{ image.title }}"
+        class="mx-auto max-h-[600px] w-auto rounded-lg object-contain"
+      >
+    </div>
+
+    <!-- Content -->
+    <div class="p-6">
+      <!-- Title -->
+      <h1 class="mb-2 text-3xl font-bold text-gray-900">{{ image.title }}</h1>
+
+      <!-- Caption -->
+      {% if image.caption %}
+      <p class="mb-4 text-lg text-gray-600">{{ image.caption }}</p>
+      {% endif %}
+
+      <!-- Meta information -->
+      <div class="mb-4 flex items-center gap-4 text-sm text-gray-500">
+        <span>By {{ image.user.username }}</span>
+        <span>•</span>
+        <span>{{ image.created|date:"F j, Y" }}</span>
+        <span>•</span>
+        <span>{{ total_views }} view{{ total_views|pluralize }}</span>
+      </div>
+
+      <!-- Description -->
+      {% if image.description %}
+      <div class="mb-6 rounded-lg bg-gray-50 p-4">
+        <h2 class="mb-2 font-semibold text-gray-900">Description</h2>
+        <p class="text-gray-700 whitespace-pre-line">{{ image.description }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <button 
+          data-id="{{ image.id }}"
+          data-action="like"
+          class="like-button rounded-lg px-6 py-2 font-medium transition inline-flex items-center gap-2 
+            {% if request.user in image.users_like.all %}bg-red-500 text-white hover:bg-red-600{% else %}bg-teal-600 text-white hover:bg-teal-700{% endif %}">
+          <span class="material-icons-outlined text-lg like-icon">{% if request.user in image.users_like.all %}favorite{% else %}favorite_border{% endif %}</span>
+          <span class="like-count">{{ image.total_likes }}</span>
+        </button>
+        
+        {% if image.user == request.user %}
+        <button class="rounded-lg border border-gray-300 px-6 py-2 font-medium text-gray-700 hover:bg-gray-50 transition">
+          Edit
+        </button>
+        <button class="rounded-lg border border-red-300 px-6 py-2 font-medium text-red-700 hover:bg-red-50 transition">
+          Delete
+        </button>
+        {% endif %}
+      </div>
+
+      <!-- Source URL -->
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <a 
+          href="{{ image.url }}" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="text-teal-600 hover:text-teal-700 text-sm inline-flex items-center gap-1"
+        >
+          <span>View original source</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.LIKE_URL = "{% url 'images:like' %}";
+</script>
+<script src="{% static 'js/like.js' %}"></script>
+<script>
+  // Custom styling for detail page like button
+  document.querySelector('.like-button')?.addEventListener('like-toggled', function(e) {
+    if (e.detail.liked) {
+      this.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+      this.classList.add('bg-red-500', 'hover:bg-red-600');
+    } else {
+      this.classList.remove('bg-red-500', 'hover:bg-red-600');
+      this.classList.add('bg-teal-600', 'hover:bg-teal-700');
+    }
+  });
+</script>
+{% endblock %}

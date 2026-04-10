@@ -1,0 +1,216 @@
+{% extends 'account/settings/base.html' %}
+
+{% block settings_content %}
+<div class="mb-6">
+    <h2 class="text-xl font-semibold text-gray-900 mb-2">Privacy & Safety</h2>
+    <p class="text-gray-600">Control who can see your content and how you interact with others</p>
+</div>
+
+<form method="post" class="space-y-8">
+    {% csrf_token %}
+
+    <!-- Profile Visibility -->
+    <div class="border-b border-gray-200 pb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Profile Visibility</h3>
+        <div class="space-y-4">
+            <div>
+                <h4 class="font-medium text-gray-900 mb-3">Who can see your profile?</h4>
+                <div class="space-y-3">
+                    <label
+                        class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="profile_visibility" value="public" checked
+                            class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                        <div>
+                            <h5 class="font-medium text-gray-900">Everyone</h5>
+                            <p class="text-sm text-gray-600">Your profile is visible to all users</p>
+                        </div>
+                    </label>
+
+                    <label
+                        class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="profile_visibility" value="followers"
+                            class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                        <div>
+                            <h5 class="font-medium text-gray-900">Followers Only</h5>
+                            <p class="text-sm text-gray-600">Only people who follow you can see your profile</p>
+                        </div>
+                    </label>
+
+                    <label
+                        class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="profile_visibility" value="private"
+                            class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                        <div>
+                            <h5 class="font-medium text-gray-900">Private</h5>
+                            <p class="text-sm text-gray-600">Your profile is completely private</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookmark Privacy -->
+    <div class="border-b border-gray-200 pb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Bookmark Privacy</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Make bookmarks private by default</h4>
+                    <p class="text-sm text-gray-600">New bookmarks will be private unless you choose to make them
+                        public</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="default_private_bookmarks" class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Hide liked bookmarks</h4>
+                    <p class="text-sm text-gray-600">Don't show which bookmarks you've liked to other users</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="hide_liked_bookmarks" class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discovery -->
+    <div class="border-b border-gray-200 pb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Discovery</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Allow others to find you by email</h4>
+                    <p class="text-sm text-gray-600">Let people find your account using your email address</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="discoverable_by_email" checked class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Show in discover suggestions</h4>
+                    <p class="text-sm text-gray-600">Allow your profile to appear in "Who to follow" suggestions</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="show_in_suggestions" checked class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactions -->
+    <div class="border-b border-gray-200 pb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Interactions</h3>
+        <div class="space-y-4">
+            <div>
+                <h4 class="font-medium text-gray-900 mb-3">Who can comment on your bookmarks?</h4>
+                <div class="space-y-3">
+                    <label
+                        class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="comment_permissions" value="everyone" checked
+                            class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                        <div>
+                            <h5 class="font-medium text-gray-900">Everyone</h5>
+                            <p class="text-sm text-gray-600">Anyone can comment on your public bookmarks</p>
+                        </div>
+                    </label>
+
+                    <label
+                        class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="comment_permissions" value="followers"
+                            class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                        <div>
+                            <h5 class="font-medium text-gray-900">People You Follow</h5>
+                            <p class="text-sm text-gray-600">Only people you follow can comment</p>
+                        </div>
+                    </label>
+
+                    <label
+                        class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="comment_permissions" value="none"
+                            class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                        <div>
+                            <h5 class="font-medium text-gray-900">No One</h5>
+                            <p class="text-sm text-gray-600">Disable comments on all your bookmarks</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blocked Users -->
+    <div class="border-b border-gray-200 pb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Blocked Users</h3>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Blocked Accounts</h4>
+                    <p class="text-sm text-gray-600">You haven't blocked any accounts yet</p>
+                </div>
+                <button type="button"
+                    class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    Manage
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data & Privacy -->
+    <div>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Data & Privacy</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Analytics</h4>
+                    <p class="text-sm text-gray-600">Allow us to use your data to improve ImageMark</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="analytics_opt_in" checked class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 class="font-medium text-blue-900 mb-2">Download Your Data</h4>
+                <p class="text-sm text-blue-700 mb-3">Get a copy of all your data including bookmarks, profile
+                    information, and activity.</p>
+                <button type="button"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Request Data Export
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        <a href="{% url 'profile' %}"
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            Cancel
+        </a>
+        <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+            Save Settings
+        </button>
+    </div>
+</form>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static thumbnail %}
+
+{% block content %}
+<header class="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-bold">
+                {% if active_tag %}#{{ active_tag }}{% elif search_query %}Search results{% else %}Explore{% endif %}
+            </h1>
+            <p class="text-sm text-gray-500">
+                {% if is_searching %}{{ result_count }} result{{ result_count|pluralize }}{% else %}Discover trending images and creators{% endif %}
+            </p>
+        </div>
+        {% if is_searching %}
+        <a href="{% url 'explore' %}" class="text-sm font-medium text-teal-600 hover:text-teal-700">Clear</a>
+        {% endif %}
+    </div>
+    <!-- mobile search -->
+    <form method="get" action="{% url 'explore' %}" class="mt-3 lg:hidden">
+        <div class="flex items-center gap-3 rounded-xl bg-gray-100 px-4 py-2.5">
+            <span class="material-icons-outlined text-gray-400 text-xl">search</span>
+            <input type="text" name="q" placeholder="Search images, creators..." value="{{ search_query|default:'' }}"
+                class="flex-1 bg-transparent text-sm placeholder-gray-400 outline-none" />
+        </div>
+    </form>
+</header>
+
+{% if is_searching %}
+<!-- results mode -->
+{% include 'account/partials/image_grid.html' with images=images %}
+{% if not images %}
+<div class="flex flex-col items-center justify-center py-20 text-gray-400">
+    <span class="material-icons-outlined text-5xl mb-3">image_search</span>
+    <p class="text-lg font-medium text-gray-600">No results found</p>
+    <p class="text-sm mt-1">Try a different search term or browse trending tags</p>
+</div>
+{% endif %}
+{% else %}
+<!-- discovery mode -->
+
+<!-- Trending Now -->
+<section class="border-b border-gray-200">
+    <div class="flex items-center justify-between px-4 pt-5 pb-2">
+        <h2 class="text-lg font-semibold">Trending Now</h2>
+        <span class="material-icons-outlined text-gray-400">local_fire_department</span>
+    </div>
+    {% include 'account/partials/image_grid.html' with images=trending_images %}
+</section>
+
+<!-- Fresh Finds -->
+<section class="border-b border-gray-200">
+    <div class="flex items-center justify-between px-4 pt-5 pb-2">
+        <h2 class="text-lg font-semibold">Fresh Finds</h2>
+        <span class="material-icons-outlined text-gray-400">auto_awesome</span>
+    </div>
+    {% include 'account/partials/image_grid.html' with images=fresh_images %}
+</section>
+
+<!-- Creators to Follow -->
+<section>
+    <div class="flex items-center justify-between px-4 pt-5 pb-2">
+        <h2 class="text-lg font-semibold">Creators to Follow</h2>
+        <span class="material-icons-outlined text-gray-400">group</span>
+    </div>
+    <div class="px-4 pb-6 space-y-4">
+        {% for creator in creators %}
+        <div class="flex items-center justify-between">
+            <a href="{% url 'user_profile' creator.username %}" class="flex items-center gap-3 hover:opacity-80">
+                {% if creator.profile_picture %}
+                <img src="{{ creator.profile_picture.url }}" class="h-12 w-12 rounded-full object-cover"
+                    alt="{{ creator.username }}" />
+                {% else %}
+                <div class="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center">
+                    <span class="text-teal-600 font-semibold text-lg">{{ creator.username|first|upper }}</span>
+                </div>
+                {% endif %}
+                <div>
+                    <p class="font-medium text-sm">{{ creator.get_full_name|default:creator.username }}</p>
+                    <p class="text-xs text-gray-500">@{{ creator.username }}</p>
+                </div>
+            </a>
+            {% if user.is_authenticated and creator != user %}
+            <button onclick="followUser({{ creator.id }}, this)"
+                class="follow-btn rounded-lg bg-teal-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-teal-700 transition">
+                Follow
+            </button>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="text-center py-8 text-gray-500">
+            <span class="material-icons-outlined text-4xl mb-2">group</span>
+            <p class="text-sm">No creator suggestions yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    window.LIKE_URL = "{% url 'images:like' %}";
+</script>
+<script src="{% static 'js/like.js' %}"></script>
+{% endblock %}

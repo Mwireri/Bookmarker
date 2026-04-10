@@ -1,0 +1,36 @@
+{% for item in users %}
+<div class="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 transition" data-user-id="{{ item.user.id }}">
+    <!-- User Info -->
+    <a href="{% url 'user_profile' item.user.username %}" class="flex items-center gap-3 flex-1 min-w-0">
+        {% if item.user.profile_picture %}
+        <img src="{{ item.user.profile_picture.url }}" alt="{{ item.user.username }}" class="h-12 w-12 rounded-full object-cover flex-shrink-0" />
+        {% else %}
+        <div class="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
+            <span class="text-teal-600 font-semibold text-lg">{{ item.user.username|slice:":1"|upper }}</span>
+        </div>
+        {% endif %}
+        
+        <div class="min-w-0">
+            <p class="font-semibold text-gray-900 truncate">{{ item.user.get_full_name|default:item.user.username }}</p>
+            <p class="text-sm text-gray-500 truncate">@{{ item.user.username }}</p>
+            {% if item.user.about %}
+            <p class="text-sm text-gray-600 truncate mt-0.5">{{ item.user.about|truncatechars:50 }}</p>
+            {% endif %}
+        </div>
+    </a>
+
+    <!-- Follow Button (don't show for self) -->
+    {% if item.user.id != request.user.id %}
+    <button
+        onclick="followUser({{ item.user.id }}, this)"
+        class="follow-btn ml-3 px-4 py-1.5 rounded-full font-medium text-sm transition-colors flex-shrink-0
+        {% if item.is_following %}
+        bg-gray-200 text-gray-700 hover:bg-red-100 hover:text-red-600
+        {% else %}
+        bg-teal-600 text-white hover:bg-teal-700
+        {% endif %}">
+        {% if item.is_following %}Following{% else %}Follow{% endif %}
+    </button>
+    {% endif %}
+</div>
+{% endfor %}

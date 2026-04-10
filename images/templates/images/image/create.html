@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Bookmark Image | ImageMark{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-2xl py-8 px-4">
+  <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+    <h1 class="mb-6 text-2xl font-bold text-gray-900">Bookmark an Image</h1>
+
+    {% if messages %}
+    <div class="mb-4">
+      {% for message in messages %}
+      <div class="rounded-lg p-4 {% if message.tags == 'success' %}bg-green-50 text-green-800{% elif message.tags == 'error' %}bg-red-50 text-red-800{% else %}bg-blue-50 text-blue-800{% endif %}">
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+    <div class="mb-4 rounded-lg bg-red-50 p-4 text-red-800">
+      {% for error in form.non_field_errors %}
+      <p>{{ error }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form id="bookmark-form" method="post" class="space-y-6">
+      {% csrf_token %}
+
+      <div>
+        <label for="id_url" class="mb-2 block text-sm font-medium text-gray-700">
+          Image URL <span class="text-red-500">*</span>
+        </label>
+        {% if form.url.value %}
+        <input type="hidden" name="url" id="id_url" value="{{ form.url.value }}" data-prefilled="true">
+        <div class="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2">
+          <svg class="h-4 w-4 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+          </svg>
+          <span class="truncate text-sm text-gray-600" title="{{ form.url.value }}">{{ form.url.value }}</span>
+        </div>
+        {% else %}
+        {{ form.url }}
+        {% if form.url.errors %}
+        <p class="mt-1 text-sm text-red-600">{{ form.url.errors.0 }}</p>
+        {% endif %}
+        <p class="mt-1 text-xs text-gray-500">Paste the URL of the image you want to bookmark</p>
+        {% endif %}
+      </div>
+
+      <div id="preview-container" class="hidden">
+        <label class="mb-2 block text-sm font-medium text-gray-700">Preview</label>
+        <div class="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50">
+          <div id="preview-loading" class="flex h-48 items-center justify-center">
+            <svg class="h-8 w-8 animate-spin text-teal-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+          <img id="preview-image" src="" alt="Image preview" class="hidden max-h-96 w-full object-contain transition-opacity duration-300">
+          <div id="preview-error" class="hidden h-48 flex-col items-center justify-center text-red-500">
+            <svg class="h-12 w-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <p class="text-sm font-medium">Failed to load image</p>
+            <p class="text-xs text-gray-500">Please check the URL and try again</p>
+          </div>
+        </div>
+        <p id="dimension-error" class="hidden mt-2 text-sm text-red-600"></p>
+        <p id="dimension-info" class="hidden mt-1 text-xs text-gray-500">
+          Image size: <span id="dimension-size"></span>
+        </p>
+      </div>
+
+      <div>
+        <label for="id_title" class="mb-2 block text-sm font-medium text-gray-700">
+          Title <span class="text-red-500">*</span>
+        </label>
+        {{ form.title }}
+        <div class="mt-1 flex justify-between">
+          {% if form.title.errors %}
+          <p class="text-sm text-red-600">{{ form.title.errors.0 }}</p>
+          {% else %}
+          <span></span>
+          {% endif %}
+          <span data-counter="id_title" data-max="200" class="text-xs text-gray-400">0 / 200</span>
+        </div>
+      </div>
+
+      <div>
+        <label for="id_caption" class="mb-2 block text-sm font-medium text-gray-700">
+          Caption
+        </label>
+        {{ form.caption }}
+        <div class="mt-1 flex justify-between">
+          {% if form.caption.errors %}
+          <p class="text-sm text-red-600">{{ form.caption.errors.0 }}</p>
+          {% else %}
+          <span></span>
+          {% endif %}
+          <span data-counter="id_caption" data-max="500" class="text-xs text-gray-400">0 / 500</span>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label for="id_description" class="mb-2 block text-sm font-medium text-gray-700">
+          Description
+        </label>
+        {{ form.description }}
+        <div class="mt-1 flex justify-between">
+          {% if form.description.errors %}
+          <p class="text-sm text-red-600">{{ form.description.errors.0 }}</p>
+          {% else %}
+          <span></span>
+          {% endif %}
+          <span data-counter="id_description" data-max="2000" class="text-xs text-gray-400">0 / 2000</span>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div>
+        <label for="id_tags" class="mb-2 block text-sm font-medium text-gray-700">
+          Tags
+        </label>
+        <input type="text" id="id_tags" disabled placeholder="Coming soon..." class="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-gray-400 cursor-not-allowed">
+        <div class="mt-1 flex justify-between">
+          <span></span>
+          <span data-counter="id_tags" data-max="100" class="text-xs text-gray-400">0 / 100</span>
+        </div>
+        <p class="mt-1 text-xs text-gray-400">Organize your bookmarks with tags</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        {{ form.is_public }}
+        <label for="id_is_public" class="text-sm font-medium text-gray-700">
+          Make this image public
+        </label>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex gap-3 ml-auto">
+          <a href="{% url 'home' %}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50">
+            Cancel
+          </a>
+          <button type="submit" id="submit-btn" class="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <svg id="submit-spinner" class="hidden h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="submit-text">Bookmark Image</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+  #id_title, #id_caption {
+    @apply w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20;
+  }
+  #id_description {
+    @apply w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 resize-none;
+  }
+  #id_is_public {
+    @apply h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500;
+  }
+  #id_url {
+    @apply w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20;
+  }
+  /* Preview states */
+  #preview-container { display: none; }
+  #preview-container:not(.preview-hidden) { display: block; }
+  #preview-loading, #preview-image, #preview-error { display: none; }
+  #preview-container.preview-loading #preview-loading { display: flex; }
+  #preview-container.preview-success #preview-image { display: block; }
+  #preview-container.preview-error #preview-error { display: flex; }
+</style>
+
+<script>
+// image preview and form validation
+(function() {
+  'use strict';
+
+  const CONFIG = {
+    debounceDelay: 500,
+    fieldLimits: { title: 200, caption: 500, description: 2000, tags: 100 },
+    minImageWidth: 300,
+    minImageHeight: 300
+  };
+
+  const elements = {
+    form: document.getElementById('bookmark-form'),
+    urlInput: document.getElementById('id_url'),
+    titleInput: document.getElementById('id_title'),
+    captionInput: document.getElementById('id_caption'),
+    descriptionInput: document.getElementById('id_description'),
+    tagsInput: document.getElementById('id_tags'),
+    submitBtn: document.getElementById('submit-btn'),
+    submitSpinner: document.getElementById('submit-spinner'),
+    submitText: document.getElementById('submit-text'),
+    preview: {
+      container: document.getElementById('preview-container'),
+      loading: document.getElementById('preview-loading'),
+      image: document.getElementById('preview-image'),
+      error: document.getElementById('preview-error')
+    },
+    dimensionError: document.getElementById('dimension-error'),
+    dimensionInfo: document.getElementById('dimension-info'),
+    dimensionSize: document.getElementById('dimension-size')
+  };
+
+  const state = {
+    imageLoaded: false,
+    imageTooSmall: false,
+    isSubmitting: false,
+    isPrefilled: elements.urlInput?.dataset.prefilled === 'true',
+    currentLoadId: 0
+  };
+
+  function debounce(fn, delay) {
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  function isValidUrl(string) {
+    try {
+      const url = new URL(string);
+      return ['http:', 'https:'].includes(url.protocol);
+    } catch {
+      return false;
+    }
+  }
+
+  function initCounters() {
+    document.querySelectorAll('[data-counter]').forEach(counter => {
+      const inputId = counter.dataset.counter;
+      const maxLength = parseInt(counter.dataset.max, 10);
+      const input = document.getElementById(inputId);
+
+      if (!input) return;
+
+      const updateCounter = () => {
+        const length = input.value.length;
+        counter.textContent = `${length} / ${maxLength}`;
+        counter.classList.toggle('text-red-500', length > maxLength);
+        counter.classList.toggle('text-gray-400', length <= maxLength);
+      };
+
+      updateCounter();
+      input.addEventListener('input', updateCounter);
+    });
+  }
+
+  function showPreviewState(stateName) {
+    const { container, image } = elements.preview;
+    
+    // Remove all state classes
+    container.classList.remove('preview-loading', 'preview-success', 'preview-error', 'preview-hidden');
+    
+    if (stateName === 'hidden') {
+      container.classList.add('preview-hidden');
+    } else {
+      container.classList.add(`preview-${stateName}`);
+      if (stateName === 'success') {
+        // Fade in animation
+        image.style.opacity = '0';
+        requestAnimationFrame(() => image.style.opacity = '1');
+      }
+    }
+  }
+
+  // Load and preview image from URL with loading/error states
+  function loadImagePreview(url, loadId) {
+    if (!url || !isValidUrl(url)) {
+      if (loadId === state.currentLoadId) {
+        showPreviewState('hidden');
+        hideDimensionError();
+        state.imageLoaded = false;
+        state.imageTooSmall = false;
+        updateUI();
+      }
+      return;
+    }
+
+    if (loadId === state.currentLoadId) {
+      showPreviewState('loading');
+      hideDimensionError();
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      if (loadId !== state.currentLoadId) return; // Ignore stale loads
+      
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      
+      elements.preview.image.src = url;
+      showPreviewState('success');
+      showDimensionInfo(width, height);
+      
+      // Check minimum dimensions
+      if (width < CONFIG.minImageWidth || height < CONFIG.minImageHeight) {
+        state.imageLoaded = false;
+        state.imageTooSmall = true;
+        showDimensionError(width, height);
+      } else {
+        state.imageLoaded = true;
+        state.imageTooSmall = false;
+      }
+      
+      updateUI();
+      
+      // Auto-focus title field if empty after successful image load
+      if (elements.titleInput && !elements.titleInput.value && state.imageLoaded) {
+        elements.titleInput.focus();
+      }
+    };
+    img.onerror = () => {
+      if (loadId !== state.currentLoadId) return; // Ignore stale loads
+      
+      showPreviewState('error');
+      hideDimensionError();
+      state.imageLoaded = false;
+      state.imageTooSmall = false;
+      updateUI();
+    };
+    img.src = url;
+  }
+  
+  function showDimensionError(width, height) {
+    if (elements.dimensionError) {
+      elements.dimensionError.textContent = 
+        `Image is too small (${width}×${height}). Minimum size is ${CONFIG.minImageWidth}×${CONFIG.minImageHeight} pixels.`;
+      elements.dimensionError.classList.remove('hidden');
+    }
+  }
+  
+  function hideDimensionError() {
+    if (elements.dimensionError) {
+      elements.dimensionError.classList.add('hidden');
+    }
+    if (elements.dimensionInfo) {
+      elements.dimensionInfo.classList.add('hidden');
+    }
+  }
+  
+  function showDimensionInfo(width, height) {
+    if (elements.dimensionInfo && elements.dimensionSize) {
+      elements.dimensionSize.textContent = `${width}×${height} pixels`;
+      elements.dimensionInfo.classList.remove('hidden');
+    }
+  }
+
+  // Update UI based on current state
+  function updateUI() {
+    if (!elements.submitBtn) return;
+
+    const canSubmit = state.imageLoaded && !state.imageTooSmall && !state.isSubmitting;
+    elements.submitBtn.disabled = !canSubmit;
+    
+    if (elements.submitSpinner && elements.submitText) {
+      if (state.isSubmitting) {
+        elements.submitSpinner.classList.remove('hidden');
+        elements.submitText.textContent = 'Saving...';
+      } else if (state.imageTooSmall) {
+        elements.submitSpinner.classList.add('hidden');
+        elements.submitText.textContent = 'Image Too Small';
+      } else if (!state.imageLoaded) {
+        elements.submitSpinner.classList.add('hidden');
+        elements.submitText.textContent = 'Bookmark Image';
+      } else {
+        elements.submitSpinner.classList.add('hidden');
+        elements.submitText.textContent = 'Bookmark Image';
+      }
+    }
+  }
+
+  function setSubmitting(isSubmitting) {
+    state.isSubmitting = isSubmitting;
+    updateUI();
+  }
+
+  // Handle keyboard shortcuts for form submission
+  function initKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        if (!elements.submitBtn?.disabled) {
+          elements.form?.requestSubmit();
+        }
+      }
+    });
+  }
+
+  function initEventListeners() {
+    if (elements.urlInput && elements.urlInput.type !== 'hidden') {
+      // Debounce image preview loading to avoid excessive requests
+      const debouncedLoad = debounce((url) => {
+        state.currentLoadId++;
+        loadImagePreview(url, state.currentLoadId);
+      }, CONFIG.debounceDelay);
+      elements.urlInput.addEventListener('input', (e) => debouncedLoad(e.target.value.trim()));
+    }
+
+    elements.form?.addEventListener('submit', () => setSubmitting(true));
+  }
+
+  const initSteps = [
+    () => initCounters(),
+    () => initEventListeners(),
+    () => {
+      if (elements.urlInput?.value) {
+        state.currentLoadId++;
+        loadImagePreview(elements.urlInput.value, state.currentLoadId);
+      } else {
+        updateUI();
+      }
+      // Auto-expand description section if it has content or validation errors
+      if (elements.descriptionInput?.value) {
+        // Description is now always visible, no need to expand
+      }
+    }
+  ];
+
+  function init() {
+    setSubmitting(false);
+    initSteps.forEach(step => step());
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+{% endblock %}

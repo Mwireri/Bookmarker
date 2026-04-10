@@ -1,0 +1,54 @@
+{% load humanize thumbnail %}
+
+{% for image in images %}
+<article class="border-t border-gray-200 p-6 hover:bg-gray-50 transition image-item" data-image-id="{{ image.id }}">
+  <div class="flex gap-4">
+    {% if image.user.profile_picture %}
+      <img src="{% thumbnail image.user.profile_picture 48x48 crop quality=90 %}" class="h-12 w-12 rounded-full object-cover" alt="{{ image.user.username }}'s avatar" />
+    {% else %}
+      <div class="h-12 w-12 rounded-full bg-teal-100 flex items-center justify-center">
+        <span class="text-teal-600 font-semibold text-lg">{{ image.user.username|first|upper }}</span>
+      </div>
+    {% endif %}
+    <div class="flex-1 min-w-0">
+      <div class="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+        <span class="font-semibold text-gray-900">{{ image.user.get_full_name|default:image.user.username }}</span>
+        <span>@{{ image.user.username }}</span>
+        <span>·</span>
+        <span>{{ image.created|naturaltime }}</span>
+      </div>
+      {% if image.caption %}
+        <p class="mt-2 text-gray-800">{{ image.caption }}</p>
+      {% endif %}
+      <a href="{{ image.get_absolute_url }}" class="block mt-3 overflow-hidden rounded-xl border border-gray-200">
+        <img src="{% thumbnail image.image 640x480 crop quality=85 %}"
+          class="aspect-[4/3] w-full object-cover hover:opacity-95 transition" alt="{{ image.title }}" loading="lazy" />
+      </a>
+      <h3 class="mt-2 font-medium text-gray-900">{{ image.title }}</h3>
+      <div class="mt-4 flex justify-between text-gray-500">
+        <button
+          class="flex items-center gap-1 rounded-lg px-3 py-2 hover:bg-teal-50 hover:text-teal-600 focus:ring-2 focus:ring-teal-500">
+          <span class="material-icons-outlined text-lg">chat_bubble_outline</span>
+        </button>
+        <button
+          data-id="{{ image.id }}"
+          data-action="like"
+          class="like-button flex items-center gap-1 rounded-lg px-3 py-2 hover:bg-red-50 hover:text-red-500 focus:ring-2 focus:ring-red-400 transition {% if image.is_liked_by_user %}text-red-500{% endif %}">
+          <span class="material-icons-outlined text-lg like-icon">{% if image.is_liked_by_user %}favorite{% else %}favorite_border{% endif %}</span>
+          <span class="like-count">{{ image.total_likes }}</span>
+        </button>
+        <button
+          class="flex items-center gap-1 rounded-lg px-3 py-2 hover:bg-teal-50 hover:text-teal-600 focus:ring-2 focus:ring-teal-500">
+          <span class="material-icons-outlined text-lg">visibility</span> {{ image.display_views }}
+        </button>
+      </div>
+    </div>
+  </div>
+</article>
+{% empty %}
+<div class="p-8 text-center text-gray-500">
+  <span class="material-icons-outlined text-5xl mb-4">collections</span>
+  <h3 class="text-lg font-medium text-gray-900 mb-2">No images yet</h3>
+  <p>When images are available, they'll show up here.</p>
+</div>
+{% endfor %}

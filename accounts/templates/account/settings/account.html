@@ -1,0 +1,279 @@
+{% extends 'account/settings/base.html' %}
+{% load static %}
+
+{% block settings_content %}
+<div class="mb-8">
+    <h2 class="text-2xl font-bold text-gray-900 mb-3">Account Information</h2>
+    <p class="text-gray-600">Update your account details and profile information. Changes will be saved to your public
+        profile.</p>
+</div>
+
+{% if form.errors %}
+<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <div class="flex items-center gap-2 text-red-700 font-medium mb-2">
+        <span class="material-icons-outlined text-sm">error</span>
+        Please correct the errors below
+    </div>
+    <ul class="list-disc list-inside text-sm text-red-600 space-y-1">
+        {% for field in form %}
+            {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" class="settings-form space-y-8">
+    {% csrf_token %}
+
+    <!-- Basic Information -->
+    <div class="form-section">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <label for="first_name" class="block text-sm font-medium text-gray-700 mb-2">
+                    First Name
+                </label>
+                <input type="text" id="first_name" name="first_name" value="{{ form.first_name.value|default:'' }}"
+                    class="w-full px-4 py-3 border {% if form.first_name.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+            </div>
+            <div>
+                <label for="last_name" class="block text-sm font-medium text-gray-700 mb-2">
+                    Last Name
+                </label>
+                <input type="text" id="last_name" name="last_name" value="{{ form.last_name.value|default:'' }}"
+                    class="w-full px-4 py-3 border {% if form.last_name.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                Username
+                <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+                <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">@</span>
+                <input type="text" id="username" name="username" value="{{ form.username.value|default:'' }}" required
+                    pattern="[a-zA-Z0-9_]+"
+                    class="w-full pl-8 pr-4 py-3 border {% if form.username.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+            </div>
+            <p class="text-sm text-gray-600 mt-2 flex items-center gap-1">
+                <span class="material-icons-outlined text-sm">info</span>
+                This is how others will find you on ImageMark. Only letters, numbers, and underscores allowed.
+            </p>
+        </div>
+
+        <div class="mb-6">
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                Email Address
+                <span class="text-red-500">*</span>
+            </label>
+            <input type="email" id="email" name="email" value="{{ form.email.value|default:'' }}" required
+                class="w-full px-4 py-3 border {% if form.email.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+            <p class="text-sm text-gray-600 mt-2 flex items-center gap-1">
+                <span class="material-icons-outlined text-sm">security</span>
+                We'll never share your email with anyone else
+            </p>
+        </div>
+
+        <div>
+            <label for="phone_number" class="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+            </label>
+            <input type="tel" id="phone_number" name="phone_number" value="{{ form.phone_number.value|default:'' }}"
+                placeholder="+1234567890"
+                class="w-full px-4 py-3 border {% if form.phone_number.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+            <p class="text-sm text-gray-600 mt-2 flex items-center gap-1">
+                <span class="material-icons-outlined text-sm">phone</span>
+                Format: +999999999 (optional)
+            </p>
+        </div>
+    </div>
+
+    <!-- Profile Information -->
+    <div class="form-section">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Profile Information</h3>
+
+        <div class="mb-6">
+            <label for="about" class="block text-sm font-medium text-gray-700 mb-2">Bio</label>
+            <textarea id="about" name="about" rows="4" maxlength="500"
+                class="w-full px-4 py-3 border {% if form.about.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none"
+                placeholder="Tell us a little about yourself...">{{ form.about.value|default:'' }}</textarea>
+            <div class="flex justify-between items-center mt-2">
+                <p class="text-sm text-gray-600">Share your interests, hobbies, or what you love about images</p>
+                <span id="bio-counter" class="text-sm text-gray-400">0/500</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label for="country" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <input type="text" id="country" name="country" value="{{ form.country.value|default:'' }}"
+                    class="w-full px-4 py-3 border {% if form.country.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    placeholder="City, Country">
+                <p class="text-sm text-gray-600 mt-1">This will be shown on your public profile</p>
+            </div>
+
+            <div>
+                <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" value="{{ form.date_of_birth.value|date:'Y-m-d' }}"
+                    class="w-full px-4 py-3 border {% if form.date_of_birth.errors %}border-red-500{% else %}border-gray-300{% endif %} rounded-lg transition-colors focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                <p class="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                    <span class="material-icons-outlined text-sm">lock</span>
+                    This will not be shown publicly
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+            <span class="material-icons-outlined text-sm">info</span>
+            <span>Fields marked with <span class="text-red-500">*</span> are required</span>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'profile' %}"
+                class="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                Cancel
+            </a>
+            <button type="submit"
+                class="px-6 py-3 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium flex items-center gap-2">
+                <span class="material-icons-outlined text-sm">save</span>
+                Save Changes
+            </button>
+        </div>
+    </div>
+</form>
+
+<!-- JavaScript -->
+<script>
+    // Bio character counter
+    document.addEventListener('DOMContentLoaded', function () {
+        const bioTextarea = document.getElementById('about');
+        const counter = document.getElementById('bio-counter');
+
+        function updateCounter() {
+            const length = bioTextarea.value.length;
+            counter.textContent = `${length}/500`;
+
+            if (length > 480) {
+                counter.classList.add('text-red-600');
+                counter.classList.remove('text-amber-600', 'text-gray-400');
+            } else if (length > 450) {
+                counter.classList.add('text-amber-600');
+                counter.classList.remove('text-gray-400', 'text-red-600');
+            } else {
+                counter.classList.add('text-gray-400');
+                counter.classList.remove('text-amber-600', 'text-red-600');
+            }
+        }
+
+        bioTextarea.addEventListener('input', updateCounter);
+        updateCounter();
+
+        // Username validation and availability check
+        const usernameInput = document.getElementById('username');
+        const originalUsername = '{{ user.username }}';
+        let usernameCheckTimeout = null;
+        
+        // Create status indicator
+        const usernameWrapper = usernameInput.closest('.relative');
+        let statusIndicator = document.getElementById('username-status');
+        if (!statusIndicator) {
+            statusIndicator = document.createElement('span');
+            statusIndicator.id = 'username-status';
+            statusIndicator.className = 'absolute right-4 top-1/2 transform -translate-y-1/2 text-sm';
+            usernameWrapper.appendChild(statusIndicator);
+        }
+        
+        usernameInput.addEventListener('input', function () {
+            const value = this.value.trim();
+            const isValid = /^[a-zA-Z0-9_]*$/.test(value);
+
+            if (!isValid && value.length > 0) {
+                this.setCustomValidity('Username can only contain letters, numbers, and underscores');
+                statusIndicator.innerHTML = '<span class="material-icons-outlined text-red-500">error</span>';
+                statusIndicator.title = 'Invalid characters';
+                return;
+            } else {
+                this.setCustomValidity('');
+            }
+            
+            // Skip check if username is unchanged or empty
+            if (value === originalUsername || value.length === 0) {
+                statusIndicator.innerHTML = '';
+                return;
+            }
+            
+            // Debounce the availability check
+            clearTimeout(usernameCheckTimeout);
+            statusIndicator.innerHTML = '<span class="material-icons-outlined text-gray-400 animate-spin">sync</span>';
+            
+            usernameCheckTimeout = setTimeout(() => {
+                fetch(`/accounts/check-username/?username=${encodeURIComponent(value)}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.available) {
+                        statusIndicator.innerHTML = '<span class="material-icons-outlined text-green-500">check_circle</span>';
+                        statusIndicator.title = 'Username available';
+                        usernameInput.setCustomValidity('');
+                    } else {
+                        statusIndicator.innerHTML = '<span class="material-icons-outlined text-red-500">cancel</span>';
+                        statusIndicator.title = 'Username already taken';
+                        usernameInput.setCustomValidity('This username is already taken');
+                    }
+                })
+                .catch(() => {
+                    statusIndicator.innerHTML = '';
+                });
+            }, 500);
+        });
+        
+        // Email change confirmation
+        const emailInput = document.getElementById('email');
+        const originalEmail = '{{ user.email }}';
+        let emailWarning = document.getElementById('email-change-warning');
+        
+        emailInput.addEventListener('input', function() {
+            const value = this.value.trim();
+            
+            if (!emailWarning) {
+                emailWarning = document.createElement('div');
+                emailWarning.id = 'email-change-warning';
+                emailWarning.className = 'mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 flex items-start gap-2';
+                this.parentNode.insertBefore(emailWarning, this.nextSibling);
+            }
+            
+            if (value !== originalEmail && value.length > 0) {
+                emailWarning.innerHTML = `
+                    <span class="material-icons-outlined text-amber-500">warning</span>
+                    <div>
+                        <p class="font-medium">Email change requires verification</p>
+                        <p class="text-amber-600">A confirmation link will be sent to <strong>${value}</strong>. Your email won't change until you click the link.</p>
+                    </div>
+                `;
+                emailWarning.classList.remove('hidden');
+            } else {
+                emailWarning.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+<style>
+    @keyframes spin {
+        from { transform: translateY(-50%) rotate(0deg); }
+        to { transform: translateY(-50%) rotate(360deg); }
+    }
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+</style>
+{% endblock %}

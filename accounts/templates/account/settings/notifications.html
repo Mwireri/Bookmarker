@@ -1,0 +1,156 @@
+{% extends 'account/settings/base.html' %}
+
+{% block settings_content %}
+<div class="mb-6">
+    <h2 class="text-xl font-semibold text-gray-900 mb-2">Notification Settings</h2>
+    <p class="text-gray-600">Choose how you want to be notified about activity on ImageMark</p>
+</div>
+
+<form method="post" class="space-y-8">
+    {% csrf_token %}
+
+    <!-- Email Notifications -->
+    <div class="border-b border-gray-200 pb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Email Notifications</h3>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">New Followers</h4>
+                    <p class="text-sm text-gray-600">Get notified when someone follows you</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="email_new_followers" checked class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Likes on Your Bookmarks</h4>
+                    <p class="text-sm text-gray-600">Get notified when someone likes your bookmark</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="email_bookmark_likes" checked class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Comments & Replies</h4>
+                    <p class="text-sm text-gray-600">Get notified about comments and replies to your bookmarks</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="email_comments" checked class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Weekly Digest</h4>
+                    <p class="text-sm text-gray-600">Weekly summary of your activity and trending content</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="email_weekly_digest" class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Push Notifications -->
+    <div class="border-b border-gray-200 pb-8">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Push Notifications</h3>
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <div class="flex items-start gap-3">
+                <span class="material-icons-outlined text-yellow-600 mt-0.5">warning</span>
+                <div>
+                    <h4 class="font-medium text-yellow-900 mb-1">Browser Permissions Required</h4>
+                    <p class="text-sm text-yellow-700">Enable browser notifications to receive real-time alerts.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h4 class="font-medium text-gray-900">Real-time Notifications</h4>
+                    <p class="text-sm text-gray-600">Instant notifications for important activities</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="push_realtime" class="sr-only peer">
+                    <div
+                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-teal-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600">
+                    </div>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Frequency -->
+    <div>
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Email Frequency</h3>
+        <div class="space-y-3">
+            <label
+                class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="email_frequency" value="immediate" checked
+                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                <div>
+                    <h4 class="font-medium text-gray-900">Immediate</h4>
+                    <p class="text-sm text-gray-600">Send emails as activities happen</p>
+                </div>
+            </label>
+
+            <label
+                class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="email_frequency" value="daily"
+                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                <div>
+                    <h4 class="font-medium text-gray-900">Daily Digest</h4>
+                    <p class="text-sm text-gray-600">Receive one email per day with all activities</p>
+                </div>
+            </label>
+
+            <label
+                class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="email_frequency" value="weekly"
+                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                <div>
+                    <h4 class="font-medium text-gray-900">Weekly Summary</h4>
+                    <p class="text-sm text-gray-600">Receive a weekly summary of all activities</p>
+                </div>
+            </label>
+
+            <label
+                class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                <input type="radio" name="email_frequency" value="never"
+                    class="w-4 h-4 text-teal-600 border-gray-300 focus:ring-teal-500">
+                <div>
+                    <h4 class="font-medium text-gray-900">Never</h4>
+                    <p class="text-sm text-gray-600">Don't send any notification emails</p>
+                </div>
+            </label>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        <a href="{% url 'settings' %}"
+            class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            Cancel
+        </a>
+        <button type="submit" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">
+            Save Preferences
+        </button>
+    </div>
+</form>
+{% endblock %}

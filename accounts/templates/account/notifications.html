@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="border-b border-gray-200 p-4">
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold">Notifications</h1>
+    {% if activities and unread_count > 0 %}
+    <button onclick="markAllRead()" class="text-sm font-medium text-teal-600 hover:text-teal-700">
+      Mark all as read
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<div id="activities-container">
+  {% if activities %}
+  {% include 'account/partials/activity_list.html' %}
+  {% else %}
+  <div class="flex flex-col items-center justify-center py-16 text-center">
+    <span class="material-icons-outlined text-6xl text-gray-300 mb-4">notifications_none</span>
+    <h2 class="text-lg font-medium text-gray-700 mb-2">No notifications yet</h2>
+    <p class="text-gray-500 max-w-sm">When someone follows you or interacts with your content, you'll see it here.</p>
+  </div>
+  {% endif %}
+</div>
+
+{% if has_next %}
+<div id="load-more" class="p-4 text-center">
+  <button onclick="loadMore()" class="text-teal-600 hover:text-teal-700 font-medium">
+    Load more
+  </button>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let nextPage = {{ next_page|default:"null" }};
+
+  function markAllRead() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch('{% url "mark_notifications_read" %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Remove unread styling from all activities
+        document.querySelectorAll('.activity-item.bg-teal-50').forEach(el => {
+          el.classList.remove('bg-teal-50');
+        });
+        // Hide the mark all read button
+        document.querySelector('button[onclick="markAllRead()"]')?.remove();
+        // Update badge in nav
+        document.querySelectorAll('.notification-badge').forEach(el => el.remove());
+      }
+    });
+  }
+
+  function markAsRead(activityId, element) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    fetch('{% url "mark_notifications_read" %}', {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': csrfToken,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `notification_id=${activityId}`,
+      credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        element.closest('.activity-item').classList.remove('bg-teal-50');
+      }
+    });
+  }
+
+  function loadMore() {
+    if (!nextPage) return;
+
+    fetch(`?page=${nextPage}`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('activities-container');
+      container.insertAdjacentHTML('beforeend', data.html);
+
+      if (data.has_next) {
+        nextPage = data.next_page;
+      } else {
+        document.getElementById('load-more')?.remove();
+        nextPage = null;
+      }
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% load humanize thumbnail %}
+
+{% if images %}
+<div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
+  {% for image in images %}
+  <div class="bg-white rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition-shadow"
+       data-image-id="{{ image.id }}">
+    <a href="{{ image.get_absolute_url }}" class="block aspect-square overflow-hidden">
+      <img src="{% thumbnail image.image 400x400 crop quality=85 %}"
+           alt="{{ image.title }}"
+           class="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+           loading="lazy" />
+    </a>
+    
+    <!-- Stats below image -->
+    <div class="px-3 py-2 flex items-center justify-between text-sm text-gray-500 border-t border-gray-100">
+      <div class="flex items-center gap-1 {% if image.is_liked_by_user %}text-red-500{% endif %}">
+        <span class="material-icons text-base">
+          {% if image.is_liked_by_user %}favorite{% else %}favorite_border{% endif %}
+        </span>
+        <span>{{ image.total_likes|default:0 }}</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <span class="material-icons-outlined text-base">visibility</span>
+        <span>{{ image.display_views|default:0 }}</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="p-8 text-center text-gray-500">
+  <span class="material-icons-outlined text-5xl mb-4">collections</span>
+  <h3 class="text-lg font-medium text-gray-900 mb-2">No images yet</h3>
+  <p>When images are available, they'll show up here.</p>
+</div>
+{% endif %}

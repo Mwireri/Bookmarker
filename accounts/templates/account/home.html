@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<header class="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3">
+  <h1 class="text-xl font-bold">Home</h1>
+</header>
+
+<div id="images-container">
+  {% include 'account/partials/image_feed.html' %}
+</div>
+
+{% if has_next %}
+<div id="loading-indicator" class="p-8 text-center hidden">
+  <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+  <p class="mt-2 text-gray-500">Loading more images...</p>
+</div>
+<div id="load-more-trigger" class="h-20" data-next-page="{{ next_page }}"></div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.LIKE_URL = "{% url 'images:like' %}";
+  window.FEED_URL = "{% url 'home' %}";
+</script>
+<script src="{% static 'js/like.js' %}"></script>
+<script src="{% static 'js/infinite-scroll.js' %}"></script>
+{% endblock %}

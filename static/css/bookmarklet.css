@@ -1,0 +1,229 @@
+.imagemark-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 2147483647;
+    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.imagemark-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.imagemark-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.imagemark-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.imagemark-logo svg {
+    width: 32px;
+    height: 32px;
+}
+
+.imagemark-logo span {
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.imagemark-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.imagemark-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.imagemark-info {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.imagemark-count {
+    color: #14b8a6;
+    font-weight: 600;
+}
+
+.imagemark-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.imagemark-item {
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    aspect-ratio: 1;
+}
+
+.imagemark-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.imagemark-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.imagemark-item-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px;
+}
+
+.imagemark-item:hover .imagemark-item-overlay {
+    opacity: 1;
+}
+
+.imagemark-item-btn {
+    width: 100%;
+    background: #14b8a6;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.imagemark-item-btn:hover {
+    background: #0d9488;
+}
+
+.imagemark-item-size {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.imagemark-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.imagemark-empty svg {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.imagemark-empty h3 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.imagemark-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.imagemark-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #14b8a6;
+    border-radius: 50%;
+    animation: imagemark-spin 0.8s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes imagemark-spin {
+    to { transform: rotate(360deg); }
+}
+
+.imagemark-filter {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.imagemark-filter-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.imagemark-filter-btn:hover,
+.imagemark-filter-btn.active {
+    background: #14b8a6;
+    border-color: #14b8a6;
+    color: white;
+}
+
+.imagemark-search {
+    flex: 1;
+    min-width: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    outline: none;
+}
+
+.imagemark-search::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.imagemark-search:focus {
+    border-color: #14b8a6;
+}

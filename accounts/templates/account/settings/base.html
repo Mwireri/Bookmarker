@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Header with Breadcrumb -->
+    <header class="sticky top-0 z-20 bg-white/80 backdrop-blur-md border-b border-gray-200 px-4 py-3">
+        <div class="flex items-center gap-2 text-sm text-gray-600">
+            <a href="{% url 'settings' %}" class="hover:text-teal-600 font-medium">Settings</a>
+            <span class="material-icons-outlined text-xs">chevron_right</span>
+            <span class="text-gray-900 font-semibold">
+                {% if current_settings_section == 'account' %}Account
+                {% elif current_settings_section == 'security' %}Security
+                {% elif current_settings_section == 'notifications' %}Notifications
+                {% elif current_settings_section == 'privacy' %}Privacy & Safety
+                {% elif current_settings_section == 'bookmarklet' %}Bookmarklet
+                {% endif %}
+            </span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <!-- Mobile Navigation -->
+            <div class="md:hidden border-b border-gray-200 p-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <a href="{% url 'settings_account' %}"
+                        class="px-3 py-2 text-sm font-medium rounded-lg text-center transition-colors
+                              {% if current_settings_section == 'account' %}bg-teal-100 text-teal-700{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %}">
+                        Account
+                    </a>
+                    <a href="{% url 'settings_security' %}"
+                        class="px-3 py-2 text-sm font-medium rounded-lg text-center transition-colors
+                              {% if current_settings_section == 'security' %}bg-teal-100 text-teal-700{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %}">
+                        Security
+                    </a>
+                    <a href="{% url 'settings_notifications' %}"
+                        class="px-3 py-2 text-sm font-medium rounded-lg text-center transition-colors
+                              {% if current_settings_section == 'notifications' %}bg-teal-100 text-teal-700{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %}">
+                        Notifications
+                    </a>
+                    <a href="{% url 'settings_privacy' %}"
+                        class="px-3 py-2 text-sm font-medium rounded-lg text-center transition-colors
+                              {% if current_settings_section == 'privacy' %}bg-teal-100 text-teal-700{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %}">
+                        Privacy
+                    </a>
+                    <a href="{% url 'settings_bookmarklet' %}"
+                        class="px-3 py-2 text-sm font-medium rounded-lg text-center transition-colors col-span-2
+                              {% if current_settings_section == 'bookmarklet' %}bg-teal-100 text-teal-700{% else %}text-gray-600 hover:text-gray-900 hover:bg-gray-100{% endif %}">
+                        Bookmarklet
+                    </a>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6 sm:p-8">
+                {% block settings_content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unsaved Changes Warning -->
+<div id="unsaved-warning" class="hidden fixed bottom-4 right-4 bg-amber-500 text-white px-4 py-3 rounded-lg shadow-lg">
+    <div class="flex items-center gap-2">
+        <span class="material-icons-outlined text-sm">warning</span>
+        <span class="text-sm font-medium">You have unsaved changes</span>
+    </div>
+</div>
+
+<!-- Success/Error Messages -->
+{% if messages %}
+<div class="fixed top-20 right-4 z-50 space-y-2">
+    {% for message in messages %}
+    <div
+        class="bg-{% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% else %}blue{% endif %}-500 text-white px-4 py-3 rounded-lg shadow-lg max-w-sm">
+        <div class="flex items-center gap-2">
+            <span class="material-icons-outlined text-sm">
+                {% if message.tags == 'success' %}
+                check_circle
+                {% elif message.tags == 'error' %}
+                error
+                {% else %}
+                info
+                {%endif %}
+            </span>
+            <span class="text-sm font-medium">{{ message }}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<style>
+    .settings-form input:focus,
+    .settings-form textarea:focus,
+    .settings-form select:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgb(20 184 166 / 0.5);
+        border-color: rgb(20 184 166);
+    }
+
+    .form-section {
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    .fade-in {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<script>
+    // Form change detection
+    document.addEventListener('DOMContentLoaded', function () {
+        const forms = document.querySelectorAll('form');
+        const warningElement = document.getElementById('unsaved-warning');
+        let hasUnsavedChanges = false;
+
+        forms.forEach(form => {
+            const originalData = new FormData(form);
+
+            form.addEventListener('input', function () {
+                const currentData = new FormData(form);
+                hasUnsavedChanges = false;
+
+                for (let [key, value] of currentData.entries()) {
+                    if (originalData.get(key) !== value) {
+                        hasUnsavedChanges = true;
+                        break;
+                    }
+                }
+
+                if (hasUnsavedChanges) {
+                    warningElement.classList.remove('hidden');
+                } else {
+                    warningElement.classList.add('hidden');
+                }
+            });
+
+            form.addEventListener('submit', function () {
+                hasUnsavedChanges = false;
+                warningElement.classList.add('hidden');
+            });
+        });
+
+        // Auto-hide messages after 5 seconds
+        setTimeout(() => {
+            const messages = document.querySelectorAll('[class*="bg-green-500"], [class*="bg-red-500"], [class*="bg-blue-500"]');
+            messages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease-out';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+            });
+        }, 5000);
+    });
+</script>
+{% endblock %}

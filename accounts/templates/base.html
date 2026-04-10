@@ -1,0 +1,357 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}" />
+  <title>{% block title %}{{ page_title|default:"ImageMark" }}{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined" rel="stylesheet" />
+  <link href="{% static 'css/output.css' %}" rel="stylesheet" />
+</head>
+
+<body class="min-h-screen bg-white font-sans text-gray-900 antialiased">
+  <div class="mx-auto max-w-7xl">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+
+      <!-- Desktop Sidebar -->
+      <aside class="hidden py-6 lg:col-span-3 lg:block">
+        <div class="sticky top-6 space-y-6">
+          <!-- Logo -->
+          <div class="text-3xl font-extrabold tracking-tight text-teal-700">
+            <a href="{% url 'home' %}">Image<span class="text-teal-500">Mark</span></a>
+          </div>
+
+          <!-- Navigation -->
+          <nav class="space-y-2">
+            <a href="{% url 'home' %}"
+              class="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition
+              {% if current_section == 'home' %}text-teal-700 bg-teal-50{% else %}text-gray-700 hover:bg-gray-50 hover:text-teal-600{% endif %}">
+              <span class="material-icons-outlined">home</span> Home
+            </a>
+            <a href="{% url 'explore' %}"
+              class="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition
+              {% if current_section == 'explore' %}text-teal-700 bg-teal-50{% else %}text-gray-700 hover:bg-gray-50 hover:text-teal-600{% endif %}">
+              <span class="material-icons-outlined">explore</span> Explore
+            </a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'notifications' %}"
+              class="relative flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition
+              {% if current_section == 'notifications' %}text-teal-700 bg-teal-50{% else %}text-gray-700 hover:bg-gray-50 hover:text-teal-600{% endif %}">
+              <span class="material-icons-outlined">notifications</span> Notifications
+              {% if unread_notifications_count %}
+              <span
+                class="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">{{ unread_notifications_count }}</span>
+              {% endif %}
+            </a>
+            <a href="{% url 'profile' %}"
+              class="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition
+              {% if current_section == 'profile' %}text-teal-700 bg-teal-50{% else %}text-gray-700 hover:bg-gray-50 hover:text-teal-600{% endif %}">
+              <span class="material-icons-outlined">person</span> Profile
+            </a>
+            {% endif %}
+
+            <!-- Settings tab  for authenticated users -->
+            {% if user.is_authenticated %}
+            <a href="{% url 'settings' %}"
+              class="flex items-center gap-3 rounded-xl px-4 py-3 font-medium transition
+              {% if current_section == 'settings' %}text-teal-700 bg-teal-50{% else %}text-gray-700 hover:bg-gray-50 hover:text-teal-600{% endif %}">
+              <span class="material-icons-outlined">settings</span> Settings
+            </a>
+            {% endif %}
+
+            <!-- Authentication Section -->
+            {% if user.is_authenticated %}
+            <button type="button" onclick="openLogoutModal()"
+                class="flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 transition hover:bg-gray-50 hover:text-red-600 w-full">
+                <span class="material-icons-outlined">logout</span> Logout
+            </button>
+            {% else %}
+            <a href="{% url 'login' %}"
+              class="flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-gray-700 transition hover:bg-gray-50 hover:text-teal-600">
+              <span class="material-icons-outlined">login</span> Login
+            </a>
+            <a href="{% url 'register' %}"
+              class="flex items-center gap-3 rounded-xl px-4 py-3 font-medium text-white bg-teal-600 transition hover:bg-teal-700">
+              <span class="material-icons-outlined">person_add</span> Register
+            </a>
+            {% endif %}
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="lg:col-span-6 min-h-screen bg-white border-x border-gray-200">
+        {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+          <div
+            class="px-4 py-3 {{ message.tags }} {% if message.tags == 'error' %}bg-red-100 text-red-700{% elif message.tags == 'success' %}bg-green-100 text-green-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+      </main>
+
+      <!-- Right sidebar -->
+      <aside class="hidden py-6 lg:col-span-3 lg:block">
+        <div class="sticky top-6 space-y-6">
+          <!-- Search -->
+          <div class="rounded-xl bg-white p-3 shadow-sm">
+            <form method="get" action="{% url 'explore' %}">
+              <div class="flex items-center gap-3">
+                <span class="material-icons-outlined text-gray-400">search</span>
+                <input type="text" name="q" placeholder="Search bookmarks..." value="{{ search_query|default:'' }}"
+                  class="flex-1 bg-transparent text-sm placeholder-gray-400 outline-none" />
+              </div>
+            </form>
+          </div>
+
+          {% if is_searching %}
+          <!-- filter controls shown during search/tag browsing -->
+          <div class="rounded-xl bg-white p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold">Filters</h3>
+            <form method="get" action="{% url 'explore' %}" class="space-y-4">
+              {% if search_query %}<input type="hidden" name="q" value="{{ search_query }}">{% endif %}
+              {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag }}">{% endif %}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Sort by</label>
+                <select name="sort"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none">
+                  <option value="likes" {% if current_sort == 'likes' %}selected{% endif %}>Most liked</option>
+                  <option value="date" {% if current_sort == 'date' %}selected{% endif %}>Newest first</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Time period</label>
+                <select name="period"
+                  class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none">
+                  <option value="all" {% if current_period == 'all' %}selected{% endif %}>All time</option>
+                  <option value="month" {% if current_period == 'month' %}selected{% endif %}>Past month</option>
+                  <option value="week" {% if current_period == 'week' %}selected{% endif %}>Past week</option>
+                </select>
+              </div>
+              <button type="submit"
+                class="w-full rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 transition">
+                Apply Filters
+              </button>
+            </form>
+          </div>
+          {% else %}
+          <!-- Trending tags -->
+          <div class="rounded-xl bg-white p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold">Trending Tags</h3>
+            <div class="divide-y divide-gray-200">
+              {% for tag in trending_tags %}
+              <a href="{% url 'explore' %}?tag={{ tag.name|urlencode }}" class="block p-3 hover:bg-gray-50 transition">
+                <p class="font-medium text-left">#{{ tag.name }}</p>
+                <p class="text-sm text-gray-500 text-left">{{ tag.usage_count }} bookmark{{ tag.usage_count|pluralize }}</p>
+              </a>
+              {% empty %}
+              <p class="py-3 text-sm text-gray-500">No tags yet.</p>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if user.is_authenticated %}
+          <!-- Who to follow -->
+          <div class="rounded-xl bg-white p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold">Who to Follow</h3>
+            <div class="space-y-4">
+              {% for suggested_user in follow_suggestions %}
+              <div class="flex items-center justify-between" data-user-id="{{ suggested_user.id }}">
+                <a href="{% url 'user_profile' suggested_user.username %}" class="flex items-center gap-3 hover:opacity-80">
+                  {% if suggested_user.profile_picture %}
+                  <img src="{{ suggested_user.profile_picture.url }}" class="h-10 w-10 rounded-full object-cover" alt="{{ suggested_user.username }}" />
+                  {% else %}
+                  <div class="h-10 w-10 rounded-full bg-teal-100 flex items-center justify-center">
+                    <span class="text-teal-600 font-medium">{{ suggested_user.username|slice:":1"|upper }}</span>
+                  </div>
+                  {% endif %}
+                  <div>
+                    <p class="text-sm font-medium">{{ suggested_user.get_full_name|default:suggested_user.username }}</p>
+                    <p class="text-xs text-gray-500">@{{ suggested_user.username }}</p>
+                  </div>
+                </a>
+                <button
+                  onclick="followUser({{ suggested_user.id }}, event.target)"
+                  class="follow-btn rounded-lg bg-teal-600 px-3 py-1 text-sm font-medium text-white hover:bg-teal-700">Follow</button>
+              </div>
+              {% empty %}
+              <p class="text-sm text-gray-500">No suggestions available yet.</p>
+              {% endfor %}
+            </div>
+            {% if follow_suggestions %}
+            <a href="{% url 'who_to_follow' %}"
+              class="inline-block mt-4 text-sm font-medium text-teal-600 hover:text-teal-700">Show more</a>
+            {% endif %}
+          </div>
+
+          <!-- Bookmarklet -->
+          <div class="rounded-xl bg-gradient-to-br from-teal-50 to-white p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold">📖 Get the Bookmarklet</h3>
+            <!-- The Bookmarklet Button -->
+            <div class="text-center p-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                <p class="text-sm text-gray-600 mb-4">Drag this button to your bookmarks bar:</p>
+                <a href="javascript:(function(){window.IMAGEMARK_SITE_URL='{{ request.scheme }}://{{ request.get_host }}';var s=document.createElement('script');s.src='{{ request.scheme }}://{{ request.get_host }}{% static 'js/bookmarklet.js' %}?v=1.0';document.body.appendChild(s);})();"
+                   class="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:bg-teal-700 transition-colors cursor-move"
+                   onclick="event.preventDefault(); alert('Drag this button to your bookmarks bar!');">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    Bookmark to ImageMark
+                </a>
+                <p class="text-xs text-gray-500 mt-4">
+                    <span class="material-icons-outlined text-sm align-middle">info</span>
+                    Can't drag? Right-click and choose "Add to Bookmarks" or "Bookmark This Link"
+                </p>
+            </div>
+          </div>
+          {% else %}
+          <!-- Sign up CTA for non-authenticated users -->
+          <div class="rounded-xl bg-gradient-to-br from-teal-600 to-teal-700 p-5 shadow-sm text-white">
+            <h3 class="mb-2 text-lg font-semibold">Join ImageMark</h3>
+            <p class="text-sm text-teal-100 mb-4">Create an account to save your favorite images, follow creators, and build your collection.</p>
+            <div class="space-y-2">
+              <a href="{% url 'register' %}"
+                class="flex items-center justify-center gap-2 rounded-lg bg-white px-4 py-2.5 font-medium text-teal-700 hover:bg-teal-50 transition">
+                <span class="material-icons-outlined text-sm">person_add</span> Create Account
+              </a>
+              <a href="{% url 'login' %}"
+                class="flex items-center justify-center gap-2 rounded-lg border border-white/30 px-4 py-2.5 font-medium text-white hover:bg-white/10 transition">
+                <span class="material-icons-outlined text-sm">login</span> Sign In
+              </a>
+            </div>
+          </div>
+
+          <!-- Features preview for non-authenticated users -->
+          <div class="rounded-xl bg-white p-4 shadow-sm">
+            <h3 class="mb-3 text-lg font-semibold">Why Join?</h3>
+            <div class="space-y-3">
+              <div class="flex items-start gap-3">
+                <span class="material-icons-outlined text-teal-600">bookmark</span>
+                <div>
+                  <p class="text-sm font-medium">Save Images</p>
+                  <p class="text-xs text-gray-500">Bookmark images from anywhere on the web</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="material-icons-outlined text-teal-600">people</span>
+                <div>
+                  <p class="text-sm font-medium">Follow Creators</p>
+                  <p class="text-xs text-gray-500">Discover and follow your favorite curators</p>
+                </div>
+              </div>
+              <div class="flex items-start gap-3">
+                <span class="material-icons-outlined text-teal-600">collections</span>
+                <div>
+                  <p class="text-sm font-medium">Build Collections</p>
+                  <p class="text-xs text-gray-500">Organize your bookmarks into collections</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Mobile bottom nav -->
+  <nav class="fixed bottom-0 inset-x-0 z-20 border-t border-gray-200 bg-white lg:hidden">
+    <div class="flex justify-around py-2">
+      <a href="{% url 'home' %}"
+        class="flex flex-col items-center {% if current_section == 'home' %}text-teal-600{% else %}text-gray-500 hover:text-teal-600{% endif %}">
+        <span class="material-icons-outlined">home</span>
+        <span class="text-xs">Home</span>
+      </a>
+      <a href="{% url 'explore' %}"
+        class="flex flex-col items-center {% if current_section == 'explore' %}text-teal-600{% else %}text-gray-500 hover:text-teal-600{% endif %}">
+        <span class="material-icons-outlined">search</span>
+        <span class="text-xs">Explore</span>
+      </a>
+      {% if user.is_authenticated %}
+      <a href="{% url 'notifications' %}" class="relative flex flex-col items-center {% if current_section == 'notifications' %}text-teal-600{% else %}text-gray-500 hover:text-teal-600{% endif %}">
+        <span class="material-icons-outlined">notifications</span>
+        <span class="text-xs">Alerts</span>
+        {% if unread_notifications_count %}
+        <span class="absolute top-1 right-2 h-2 w-2 rounded-full bg-red-500"></span>
+        {% endif %}
+      </a>
+      <a href="{% url 'profile' %}"
+        class="flex flex-col items-center {% if current_section == 'profile' %}text-teal-600{% else %}text-gray-500 hover:text-teal-600{% endif %}">
+        <span class="material-icons-outlined">person</span>
+        <span class="text-xs">Profile</span>
+      </a>
+      {% else %}
+      <a href="{% url 'login' %}"
+        class="flex flex-col items-center text-gray-500 hover:text-teal-600">
+        <span class="material-icons-outlined">login</span>
+        <span class="text-xs">Login</span>
+      </a>
+      <a href="{% url 'register' %}"
+        class="flex flex-col items-center text-teal-600 hover:text-teal-700">
+        <span class="material-icons-outlined">person_add</span>
+        <span class="text-xs">Join</span>
+      </a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- Logout Modal Component -->
+  {% if user.is_authenticated %}
+    {% include 'components/logout_modal.html' %}
+  {% endif %}
+
+  <!-- Follow system  -->
+  <script>
+    function followUser(userId, button) {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+      fetch(`/accounts/user/${userId}/follow/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Content-Type': 'application/json',
+        },
+        credentials: 'same-origin'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (data.is_following) {
+            button.textContent = 'Following';
+            button.classList.remove('bg-teal-600', 'hover:bg-teal-700');
+            button.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-red-100', 'hover:text-red-600');
+          } else {
+            button.textContent = 'Follow';
+            button.classList.add('bg-teal-600', 'hover:bg-teal-700');
+            button.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-red-100', 'hover:text-red-600');
+          }
+
+          // Update follower count if visible on page
+          const followerCountEl = document.querySelector('[data-follower-count]');
+          if (followerCountEl) {
+            followerCountEl.textContent = data.follower_count;
+          }
+        } else {
+          console.error('Follow action failed:', data.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+  </script>
+
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>
