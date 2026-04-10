@@ -10,6 +10,8 @@ python manage.py createsuperuser
 
 python manage.py dumpdata --exclude auth.permission --exclude contenttypes.contenttype > fixtures/seed_data.json
 
+docker run -it --rm --name redis -p 6379:6379 redis:8.6.1
+
 python manage.py runserver
 
 http://127.0.0.1:8000/accounts/home/
