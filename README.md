@@ -8,7 +8,7 @@ pip install -r requirements.txt
 
 python manage.py createsuperuser
 
-python manage.py dumpdata --exclude auth.permission --exclude contenttypes.contenttype > fixtures/seed_data.json
+uv run python manage.py loaddata fixtures/seed_data.json
 
 docker run -it --rm --name redis -p 6379:6379 redis:8.6.1
 
